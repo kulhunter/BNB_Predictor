@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Predicción BNB - Asistente de Trading</title>
+    <title>Predictor BNB - Alertas Anticipadas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #f0b90b;
@@ -13,6 +14,7 @@
             --success: #0ecb81;
             --danger: #f6465d;
             --warning: #f0b90b;
+            --info: #0dcaf0;
         }
         
         * {
@@ -75,6 +77,13 @@
             color: var(--primary);
             margin-bottom: 15px;
             font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 i {
+            font-size: 1.1rem;
         }
         
         .price-display {
@@ -118,6 +127,19 @@
             color: var(--warning);
         }
         
+        .alert-signal {
+            background-color: rgba(13, 202, 240, 0.2);
+            border: 1px solid var(--info);
+            color: var(--info);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -150,11 +172,24 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .btn-primary {
             background-color: var(--primary);
             color: var(--secondary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
         }
         
         .btn-secondary {
@@ -171,6 +206,69 @@
         .chart-container {
             height: 300px;
             margin-top: 20px;
+        }
+        
+        .alerts-container {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .alert-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-up {
+            background-color: rgba(14, 203, 129, 0.1);
+            border-left: 4px solid var(--success);
+        }
+        
+        .alert-down {
+            background-color: rgba(246, 70, 93, 0.1);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .alert-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .profit-calc {
+            background-color: rgba(240, 185, 11, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .profit-calc h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--success);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .target-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
         }
         
         footer {
@@ -190,18 +288,52 @@
             margin-top: 20px;
             font-size: 0.9rem;
         }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.5s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification-success {
+            background-color: var(--success);
+        }
+        
+        .notification-warning {
+            background-color: var(--warning);
+            color: var(--secondary);
+        }
+        
+        .notification-danger {
+            background-color: var(--danger);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Predicción de Precios BNB</h1>
-            <p class="subtitle">Asistente de trading basado en análisis N-of-1 para operaciones con $150</p>
+            <h1><i class="fas fa-chart-line"></i> Predictor BNB - Alertas Anticipadas</h1>
+            <p class="subtitle">Sistema de alertas tempranas para obtener ganancias de $30+ con $150</p>
         </header>
         
         <div class="dashboard">
             <div class="card">
-                <h2>Precio Actual de BNB</h2>
+                <h2><i class="fas fa-coins"></i> Precio Actual de BNB</h2>
                 <div class="price-display" id="current-price">Cargando...</div>
                 <div class="stats">
                     <div class="stat-item">
@@ -216,7 +348,7 @@
             </div>
             
             <div class="card">
-                <h2>Recomendación de Trading</h2>
+                <h2><i class="fas fa-bell"></i> Recomendación de Trading</h2>
                 <div class="prediction-result" id="prediction-result">
                     Analizando datos...
                 </div>
@@ -230,35 +362,56 @@
                         <div class="stat-value" id="potential-profit">-</div>
                     </div>
                 </div>
+                <div class="profit-calc">
+                    <h3>Objetivo: $30 de ganancia</h3>
+                    <div class="progress-bar">
+                        <div class="progress" id="profit-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="target-info">
+                        <span>Ganancia actual: $<span id="current-profit">0</span></span>
+                        <span>Objetivo: $30</span>
+                    </div>
+                </div>
                 <div class="controls">
-                    <button class="btn-primary" id="buy-btn">Comprar BNB</button>
-                    <button class="btn-secondary" id="sell-btn">Vender BNB</button>
+                    <button class="btn-success" id="buy-btn">
+                        <i class="fas fa-shopping-cart"></i> Comprar BNB
+                    </button>
+                    <button class="btn-danger" id="sell-btn">
+                        <i class="fas fa-dollar-sign"></i> Vender BNB
+                    </button>
                 </div>
             </div>
         </div>
         
         <div class="card">
-            <h2>Análisis de Tendencia</h2>
+            <h2><i class="fas fa-chart-bar"></i> Análisis Predictivo</h2>
             <div class="chart-container">
                 <canvas id="price-chart"></canvas>
             </div>
             <div class="stats">
                 <div class="stat-item">
-                    <div>Tendencia</div>
-                    <div class="stat-value" id="trend">-</div>
+                    <div>Prob. Subida >3%</div>
+                    <div class="stat-value" id="up-probability">-</div>
                 </div>
                 <div class="stat-item">
-                    <div>Volatilidad</div>
-                    <div class="stat-value" id="volatility">-</div>
+                    <div>Prob. Bajada >3%</div>
+                    <div class="stat-value" id="down-probability">-</div>
                 </div>
                 <div class="stat-item">
-                    <div>RSI</div>
-                    <div class="stat-value" id="rsi">-</div>
+                    <div>Tiempo estimado</div>
+                    <div class="stat-value" id="estimated-time">-</div>
                 </div>
                 <div class="stat-item">
                     <div>Confianza</div>
                     <div class="stat-value" id="confidence">-</div>
                 </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-exclamation-triangle"></i> Alertas Anticipadas</h2>
+            <div class="alerts-container" id="alerts-container">
+                <!-- Las alertas se insertarán aquí dinámicamente -->
             </div>
         </div>
         
@@ -273,14 +426,22 @@
         </footer>
     </div>
 
+    <div class="notification" id="notification">
+        <i class="fas fa-bell"></i>
+        <span id="notification-text">¡Alerta de precio!</span>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Variables globales
         let currentPrice = 0;
         let bnbBalance = 0;
         let usdBalance = 150;
+        let initialInvestment = 150;
         let priceHistory = [];
+        let alertsHistory = [];
         let priceChart;
+        let lastBuyPrice = 0;
         
         // Elementos del DOM
         const currentPriceElement = document.getElementById('current-price');
@@ -289,17 +450,22 @@
         const predictionResultElement = document.getElementById('prediction-result');
         const bnbAmountElement = document.getElementById('bnb-amount');
         const potentialProfitElement = document.getElementById('potential-profit');
-        const trendElement = document.getElementById('trend');
-        const volatilityElement = document.getElementById('volatility');
-        const rsiElement = document.getElementById('rsi');
+        const upProbabilityElement = document.getElementById('up-probability');
+        const downProbabilityElement = document.getElementById('down-probability');
+        const estimatedTimeElement = document.getElementById('estimated-time');
         const confidenceElement = document.getElementById('confidence');
         const buyButton = document.getElementById('buy-btn');
         const sellButton = document.getElementById('sell-btn');
+        const alertsContainer = document.getElementById('alerts-container');
+        const profitProgress = document.getElementById('profit-progress');
+        const currentProfitElement = document.getElementById('current-profit');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
         
         // Inicializar la aplicación
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
-            setInterval(updateData, 30000); // Actualizar cada 30 segundos
+            setInterval(updateData, 10000); // Actualizar cada 10 segundos
         });
         
         // Función para inicializar la aplicación
@@ -326,6 +492,9 @@
             
             // Realizar análisis y predicción
             performAnalysis();
+            
+            // Verificar si hay alertas
+            checkAlerts();
         }
         
         // Función para simular actualización de precio
@@ -333,8 +502,16 @@
             // Precio base simulado de BNB (en un rango realista)
             const basePrice = 300 + Math.random() * 100;
             
-            // Generar un cambio de precio más realista
-            const changePercent = (Math.random() - 0.5) * 4; // -2% a +2%
+            // Generar un cambio de precio más realista con tendencias
+            let changePercent;
+            if (priceHistory.length < 5) {
+                changePercent = (Math.random() - 0.5) * 4; // -2% a +2%
+            } else {
+                // Después de 5 datos, empezar a crear tendencias más marcadas
+                const recentTrend = calculateTrend();
+                changePercent = (Math.random() - 0.5) * 6 + recentTrend / 10;
+            }
+            
             const newPrice = currentPrice === 0 ? basePrice : currentPrice * (1 + changePercent/100);
             
             // Actualizar precio actual
@@ -369,39 +546,136 @@
             // Calcular cantidad de BNB que se puede comprar
             const bnbAmount = usdBalance / currentPrice;
             bnbAmountElement.textContent = `${bnbAmount.toFixed(4)} BNB`;
+            
+            // Calcular ganancia actual si tenemos BNB
+            if (bnbBalance > 0 && lastBuyPrice > 0) {
+                const currentValue = bnbBalance * currentPrice;
+                const profit = currentValue - (bnbBalance * lastBuyPrice);
+                const profitPercent = (profit / (bnbBalance * lastBuyPrice)) * 100;
+                
+                potentialProfitElement.textContent = `$${profit.toFixed(2)} (${profitPercent.toFixed(2)}%)`;
+                potentialProfitElement.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+                
+                // Actualizar barra de progreso de ganancias
+                const profitPercentage = Math.min(100, (profit / 30) * 100);
+                profitProgress.style.width = `${profitPercentage}%`;
+                currentProfitElement.textContent = profit.toFixed(2);
+                
+                // Verificar si hemos alcanzado el objetivo de $30
+                if (profit >= 30 && !document.querySelector('.profit-target-reached')) {
+                    showNotification('¡Objetivo alcanzado! Ganancias de $30+', 'success');
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert-item alert-up profit-target-reached';
+                    alertDiv.innerHTML = `
+                        <i class="fas fa-trophy"></i>
+                        <div>
+                            <strong>¡OBJETIVO ALCANZADO!</strong>
+                            <div>Has logrado ganancias de $${profit.toFixed(2)} con tu inversión de $150</div>
+                            <div class="alert-time">${new Date().toLocaleTimeString()}</div>
+                        </div>
+                    `;
+                    alertsContainer.prepend(alertDiv);
+                }
+            } else {
+                potentialProfitElement.textContent = '-';
+                profitProgress.style.width = '0%';
+                currentProfitElement.textContent = '0';
+            }
         }
         
-        // Función para realizar análisis
+        // Función para realizar análisis predictivo
         function performAnalysis() {
-            // Calcular indicadores técnicos simulados
-            const trend = calculateTrend();
-            const volatility = calculateVolatility();
-            const rsi = calculateRSI();
+            // Calcular probabilidades de movimientos
+            const upProbability = calculateUpProbability();
+            const downProbability = calculateDownProbability();
             const confidence = calculateConfidence();
+            const estimatedTime = estimateTimeToMove();
             
             // Actualizar elementos de análisis
-            trendElement.textContent = trend > 0 ? 'Alcista' : 'Bajista';
-            trendElement.style.color = trend > 0 ? 'var(--success)' : 'var(--danger)';
+            upProbabilityElement.textContent = `${upProbability}%`;
+            upProbabilityElement.style.color = upProbability > 60 ? 'var(--success)' : 
+                                             upProbability > 30 ? 'var(--warning)' : 'var(--danger)';
             
-            volatilityElement.textContent = `${volatility.toFixed(2)}%`;
-            volatilityElement.style.color = volatility > 5 ? 'var(--danger)' : 'var(--success)';
+            downProbabilityElement.textContent = `${downProbability}%`;
+            downProbabilityElement.style.color = downProbability > 60 ? 'var(--danger)' : 
+                                               downProbability > 30 ? 'var(--warning)' : 'var(--success)';
             
-            rsiElement.textContent = rsi.toFixed(2);
-            if (rsi > 70) {
-                rsiElement.style.color = 'var(--danger)'; // Sobrecomprado
-            } else if (rsi < 30) {
-                rsiElement.style.color = 'var(--success)'; // Sobreventa
-            } else {
-                rsiElement.style.color = 'var(--warning)'; // Neutral
-            }
-            
-            confidenceElement.textContent = `${confidence.toFixed(1)}%`;
+            estimatedTimeElement.textContent = estimatedTime;
+            confidenceElement.textContent = `${confidence}%`;
+            confidenceElement.style.color = confidence > 70 ? 'var(--success)' : 
+                                          confidence > 40 ? 'var(--warning)' : 'var(--danger)';
             
             // Generar recomendación
-            generateRecommendation(trend, volatility, rsi, confidence);
+            generateRecommendation(upProbability, downProbability, confidence);
             
             // Actualizar gráfico
             updateChart();
+        }
+        
+        // Función para calcular probabilidad de subida >3%
+        function calculateUpProbability() {
+            if (priceHistory.length < 10) return Math.round(30 + Math.random() * 40);
+            
+            const trend = calculateTrend();
+            const volatility = calculateVolatility();
+            const rsi = calculateRSI();
+            
+            // Factores que influyen en la probabilidad de subida
+            let probability = 50;
+            
+            // Tendencia alcista aumenta probabilidad
+            if (trend > 0) probability += trend * 2;
+            
+            // RSI bajo (sobreventa) aumenta probabilidad de recuperación
+            if (rsi < 40) probability += (40 - rsi) * 0.5;
+            
+            // Volatilidad moderada puede indicar movimiento inminente
+            if (volatility > 3 && volatility < 8) probability += 10;
+            
+            // Ajustar basado en patrones recientes
+            const recentPattern = analyzeRecentPattern();
+            if (recentPattern === 'consolidation') probability += 15;
+            
+            return Math.max(5, Math.min(95, Math.round(probability)));
+        }
+        
+        // Función para calcular probabilidad de bajada >3%
+        function calculateDownProbability() {
+            if (priceHistory.length < 10) return Math.round(30 + Math.random() * 40);
+            
+            const trend = calculateTrend();
+            const volatility = calculateVolatility();
+            const rsi = calculateRSI();
+            
+            // Factores que influyen en la probabilidad de bajada
+            let probability = 50;
+            
+            // Tendencia bajista aumenta probabilidad
+            if (trend < 0) probability += Math.abs(trend) * 2;
+            
+            // RSI alto (sobrecompra) aumenta probabilidad de corrección
+            if (rsi > 60) probability += (rsi - 60) * 0.5;
+            
+            // Volatilidad alta puede indicar movimiento bajista
+            if (volatility > 8) probability += 10;
+            
+            // Ajustar basado en patrones recientes
+            const recentPattern = analyzeRecentPattern();
+            if (recentPattern === 'resistance') probability += 15;
+            
+            return Math.max(5, Math.min(95, Math.round(probability)));
+        }
+        
+        // Función para estimar tiempo hasta movimiento significativo
+        function estimateTimeToMove() {
+            const upProb = calculateUpProbability();
+            const downProb = calculateDownProbability();
+            const maxProb = Math.max(upProb, downProb);
+            
+            if (maxProb > 70) return '0-2 horas';
+            if (maxProb > 50) return '2-6 horas';
+            if (maxProb > 30) return '6-12 horas';
+            return '12+ horas';
         }
         
         // Función para calcular tendencia
@@ -443,41 +717,141 @@
             // Basado en la consistencia de la tendencia y la volatilidad
             const trend = Math.abs(calculateTrend());
             const volatility = calculateVolatility();
+            const upProb = calculateUpProbability();
+            const downProb = calculateDownProbability();
+            const maxProb = Math.max(upProb, downProb);
             
-            // Menor volatilidad y tendencia más definida = mayor confianza
-            let confidence = 70 - volatility * 2 + trend * 2;
+            // Mayor probabilidad y menor volatilidad = mayor confianza
+            let confidence = (maxProb * 0.7) + (30 - Math.min(volatility, 30));
             
             // Asegurar que esté entre 0 y 100
-            return Math.max(0, Math.min(100, confidence));
+            return Math.max(0, Math.min(100, Math.round(confidence)));
+        }
+        
+        // Función para analizar patrones recientes
+        function analyzeRecentPattern() {
+            if (priceHistory.length < 10) return 'neutral';
+            
+            const recentPrices = priceHistory.slice(-10).map(p => p.price);
+            const minPrice = Math.min(...recentPrices);
+            const maxPrice = Math.max(...recentPrices);
+            const range = maxPrice - minPrice;
+            
+            // Si el rango es pequeño, puede ser consolidación
+            if (range / minPrice < 0.02) return 'consolidation';
+            
+            // Si el precio está cerca del máximo reciente, puede encontrar resistencia
+            const current = recentPrices[recentPrices.length - 1];
+            if (current > maxPrice * 0.98) return 'resistance';
+            
+            return 'neutral';
         }
         
         // Función para generar recomendación
-        function generateRecommendation(trend, volatility, rsi, confidence) {
+        function generateRecommendation(upProbability, downProbability, confidence) {
             let recommendation = '';
             let signalClass = '';
-            let potentialProfit = 0;
             
-            // Lógica de recomendación simplificada
-            if (trend > 1 && rsi < 70 && volatility < 8) {
-                recommendation = 'COMPRAR - Tendencia alcista con baja volatilidad';
+            // Lógica de recomendación mejorada
+            if (upProbability > 65 && confidence > 60) {
+                recommendation = 'ALERTA: Probable subida pronto - CONSIDERA COMPRAR';
+                signalClass = 'alert-signal';
+            } else if (downProbability > 65 && confidence > 60) {
+                recommendation = 'ALERTA: Probable bajada pronto - CONSIDERA VENDER';
+                signalClass = 'alert-signal';
+            } else if (upProbability > downProbability && upProbability > 50) {
+                recommendation = 'Tendencia alcista - BUENA OPORTUNIDAD PARA COMPRAR';
                 signalClass = 'buy-signal';
-                potentialProfit = (trend * 0.8).toFixed(2); // Estimación simplificada
-            } else if (trend < -1 && rsi > 30) {
-                recommendation = 'VENDER - Tendencia bajista';
+            } else if (downProbability > upProbability && downProbability > 50) {
+                recommendation = 'Tendencia bajista - CONSIDERA VENDER';
                 signalClass = 'sell-signal';
-                potentialProfit = (Math.abs(trend) * 0.6).toFixed(2);
             } else {
-                recommendation = 'MANTENER - Mercado lateral o condiciones inciertas';
+                recommendation = 'Mercado lateral - MANTENER POSICIÓN ACTUAL';
                 signalClass = 'hold-signal';
-                potentialProfit = 0;
             }
             
             // Actualizar elementos
             predictionResultElement.textContent = recommendation;
             predictionResultElement.className = `prediction-result ${signalClass}`;
+        }
+        
+        // Función para verificar y generar alertas
+        function checkAlerts() {
+            const upProbability = calculateUpProbability();
+            const downProbability = calculateDownProbability();
             
-            potentialProfitElement.textContent = `${potentialProfit}%`;
-            potentialProfitElement.style.color = potentialProfit > 0 ? 'var(--success)' : 'var(--danger)';
+            // Generar alerta si hay alta probabilidad de movimiento
+            if (upProbability > 70) {
+                addAlert('up', `Alta probabilidad (${upProbability}%) de subida >3% en las próximas horas`);
+            } else if (downProbability > 70) {
+                addAlert('down', `Alta probabilidad (${downProbability}%) de bajada >3% en las próximas horas`);
+            }
+            
+            // Alertas basadas en RSI
+            const rsi = calculateRSI();
+            if (rsi > 75) {
+                addAlert('down', `RSI en ${rsi.toFixed(0)} - Posible sobrecompra, corrección probable`);
+            } else if (rsi < 25) {
+                addAlert('up', `RSI en ${rsi.toFixed(0)} - Posible sobreventa, recuperación probable`);
+            }
+        }
+        
+        // Función para agregar alerta
+        function addAlert(type, message) {
+            // Evitar alertas duplicadas recientes
+            const recentAlert = alertsHistory.find(alert => 
+                alert.message === message && 
+                (new Date() - alert.timestamp) < 60000 // 1 minuto
+            );
+            
+            if (recentAlert) return;
+            
+            // Agregar a historial
+            alertsHistory.push({
+                type,
+                message,
+                timestamp: new Date()
+            });
+            
+            // Mantener solo las últimas 10 alertas
+            if (alertsHistory.length > 10) {
+                alertsHistory.shift();
+            }
+            
+            // Crear elemento de alerta
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-item ${type === 'up' ? 'alert-up' : 'alert-down'}`;
+            alertDiv.innerHTML = `
+                <i class="fas ${type === 'up' ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                <div>
+                    <strong>${type === 'up' ? 'SUBIDA INMINENTE' : 'BAJADA INMINENTE'}</strong>
+                    <div>${message}</div>
+                    <div class="alert-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+            
+            // Agregar al contenedor
+            alertsContainer.prepend(alertDiv);
+            
+            // Mostrar notificación
+            showNotification(message, type === 'up' ? 'success' : 'danger');
+            
+            // Limitar a 5 alertas visibles
+            const allAlerts = alertsContainer.querySelectorAll('.alert-item');
+            if (allAlerts.length > 5) {
+                allAlerts[allAlerts.length - 1].remove();
+            }
+        }
+        
+        // Función para mostrar notificación
+        function showNotification(message, type) {
+            notificationText.textContent = message;
+            notification.className = `notification notification-${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
         }
         
         // Función para inicializar el gráfico
@@ -554,12 +928,16 @@
             if (usdBalance > 0) {
                 const bnbToBuy = usdBalance / currentPrice;
                 bnbBalance += bnbToBuy;
+                lastBuyPrice = currentPrice;
                 usdBalance = 0;
                 
-                alert(`Compra simulada: ${bnbToBuy.toFixed(4)} BNB por $${(bnbToBuy * currentPrice).toFixed(2)}`);
+                showNotification(`Compra simulada: ${bnbToBuy.toFixed(4)} BNB por $${(bnbToBuy * currentPrice).toFixed(2)}`, 'success');
                 updateUI();
+                
+                // Agregar alerta de compra
+                addAlert('up', `Compra realizada a $${currentPrice.toFixed(2)} - Objetivo: $30 de ganancia`);
             } else {
-                alert('No tienes suficiente saldo en USD para comprar');
+                showNotification('No tienes suficiente saldo en USD para comprar', 'danger');
             }
         }
         
@@ -567,14 +945,24 @@
         function simulateSell() {
             if (bnbBalance > 0) {
                 const usdToReceive = bnbBalance * currentPrice;
-                usdBalance += usdToReceive;
-                const profit = usdBalance - 150; // Asumiendo que empezaste con $150
+                const profit = usdToReceive - initialInvestment;
                 
-                alert(`Venta simulada: ${bnbBalance.toFixed(4)} BNB por $${usdToReceive.toFixed(2)}\nBeneficio/Pérdida: $${profit.toFixed(2)}`);
+                usdBalance += usdToReceive;
+                
+                showNotification(
+                    `Venta simulada: ${bnbBalance.toFixed(4)} BNB por $${usdToReceive.toFixed(2)} - ` +
+                    `Beneficio/Pérdida: $${profit.toFixed(2)}`, 
+                    profit >= 0 ? 'success' : 'danger'
+                );
+                
+                // Agregar alerta de venta
+                addAlert('down', `Venta realizada a $${currentPrice.toFixed(2)} - Resultado: $${profit.toFixed(2)}`);
+                
                 bnbBalance = 0;
+                lastBuyPrice = 0;
                 updateUI();
             } else {
-                alert('No tienes BNB para vender');
+                showNotification('No tienes BNB para vender', 'danger');
             }
         }
     </script>
