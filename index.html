@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicción BNB - Asistente de Trading</title>
+    <style>
+        :root {
+            --primary: #f0b90b;
+            --secondary: #1e2026;
+            --accent: #2b3139;
+            --text: #eaecef;
+            --success: #0ecb81;
+            --danger: #f6465d;
+            --warning: #f0b90b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--accent);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: var(--text);
+            opacity: 0.8;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background-color: var(--accent);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .price-display {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .price-up {
+            color: var(--success);
+        }
+        
+        .price-down {
+            color: var(--danger);
+        }
+        
+        .prediction-result {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .buy-signal {
+            background-color: rgba(14, 203, 129, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+        
+        .sell-signal {
+            background-color: rgba(246, 70, 93, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        .hold-signal {
+            background-color: rgba(240, 185, 11, 0.2);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--secondary);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent);
+            color: var(--text);
+            border: 1px solid var(--primary);
+        }
+        
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--accent);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+        
+        .disclaimer {
+            background-color: rgba(240, 185, 11, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Predicción de Precios BNB</h1>
+            <p class="subtitle">Asistente de trading basado en análisis N-of-1 para operaciones con $150</p>
+        </header>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h2>Precio Actual de BNB</h2>
+                <div class="price-display" id="current-price">Cargando...</div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>Cambio 24h</div>
+                        <div class="stat-value" id="change-24h">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Volumen 24h</div>
+                        <div class="stat-value" id="volume-24h">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Recomendación de Trading</h2>
+                <div class="prediction-result" id="prediction-result">
+                    Analizando datos...
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>BNB que puedes comprar</div>
+                        <div class="stat-value" id="bnb-amount">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Potencial ganancia</div>
+                        <div class="stat-value" id="potential-profit">-</div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="btn-primary" id="buy-btn">Comprar BNB</button>
+                    <button class="btn-secondary" id="sell-btn">Vender BNB</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Análisis de Tendencia</h2>
+            <div class="chart-container">
+                <canvas id="price-chart"></canvas>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div>Tendencia</div>
+                    <div class="stat-value" id="trend">-</div>
+                </div>
+                <div class="stat-item">
+                    <div>Volatilidad</div>
+                    <div class="stat-value" id="volatility">-</div>
+                </div>
+                <div class="stat-item">
+                    <div>RSI</div>
+                    <div class="stat-value" id="rsi">-</div>
+                </div>
+                <div class="stat-item">
+                    <div>Confianza</div>
+                    <div class="stat-value" id="confidence">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="disclaimer">
+            <strong>Descargo de responsabilidad:</strong> Esta herramienta es solo para fines educativos y no constituye asesoramiento financiero. 
+            Las criptomonedas son activos volátiles y existe el riesgo de perder dinero. 
+            Siempre investiga antes de realizar cualquier operación.
+        </div>
+        
+        <footer>
+            <p>Basado en conceptos de DeepSeek y N-of-1 AI | No afiliado a Binance</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Variables globales
+        let currentPrice = 0;
+        let bnbBalance = 0;
+        let usdBalance = 150;
+        let priceHistory = [];
+        let priceChart;
+        
+        // Elementos del DOM
+        const currentPriceElement = document.getElementById('current-price');
+        const change24hElement = document.getElementById('change-24h');
+        const volume24hElement = document.getElementById('volume-24h');
+        const predictionResultElement = document.getElementById('prediction-result');
+        const bnbAmountElement = document.getElementById('bnb-amount');
+        const potentialProfitElement = document.getElementById('potential-profit');
+        const trendElement = document.getElementById('trend');
+        const volatilityElement = document.getElementById('volatility');
+        const rsiElement = document.getElementById('rsi');
+        const confidenceElement = document.getElementById('confidence');
+        const buyButton = document.getElementById('buy-btn');
+        const sellButton = document.getElementById('sell-btn');
+        
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setInterval(updateData, 30000); // Actualizar cada 30 segundos
+        });
+        
+        // Función para inicializar la aplicación
+        function initializeApp() {
+            // Obtener datos iniciales
+            updateData();
+            
+            // Configurar eventos de botones
+            buyButton.addEventListener('click', simulateBuy);
+            sellButton.addEventListener('click', simulateSell);
+            
+            // Inicializar gráfico
+            initializeChart();
+        }
+        
+        // Función para actualizar datos
+        function updateData() {
+            // En una aplicación real, aquí harías una llamada a la API de Binance
+            // Por ahora, simularemos datos
+            simulatePriceUpdate();
+            
+            // Actualizar la interfaz
+            updateUI();
+            
+            // Realizar análisis y predicción
+            performAnalysis();
+        }
+        
+        // Función para simular actualización de precio
+        function simulatePriceUpdate() {
+            // Precio base simulado de BNB (en un rango realista)
+            const basePrice = 300 + Math.random() * 100;
+            
+            // Generar un cambio de precio más realista
+            const changePercent = (Math.random() - 0.5) * 4; // -2% a +2%
+            const newPrice = currentPrice === 0 ? basePrice : currentPrice * (1 + changePercent/100);
+            
+            // Actualizar precio actual
+            currentPrice = newPrice;
+            
+            // Agregar al historial de precios
+            priceHistory.push({
+                timestamp: new Date(),
+                price: currentPrice
+            });
+            
+            // Mantener solo los últimos 50 puntos de datos
+            if (priceHistory.length > 50) {
+                priceHistory.shift();
+            }
+        }
+        
+        // Función para actualizar la interfaz de usuario
+        function updateUI() {
+            // Actualizar precio actual
+            currentPriceElement.textContent = `$${currentPrice.toFixed(2)}`;
+            
+            // Simular cambio en 24h
+            const change24h = (Math.random() - 0.5) * 10; // -5% a +5%
+            change24hElement.textContent = `${change24h.toFixed(2)}%`;
+            change24hElement.className = change24h >= 0 ? 'price-up' : 'price-down';
+            
+            // Simular volumen en 24h
+            const volume24h = (500000 + Math.random() * 1000000).toLocaleString();
+            volume24hElement.textContent = `$${volume24h}`;
+            
+            // Calcular cantidad de BNB que se puede comprar
+            const bnbAmount = usdBalance / currentPrice;
+            bnbAmountElement.textContent = `${bnbAmount.toFixed(4)} BNB`;
+        }
+        
+        // Función para realizar análisis
+        function performAnalysis() {
+            // Calcular indicadores técnicos simulados
+            const trend = calculateTrend();
+            const volatility = calculateVolatility();
+            const rsi = calculateRSI();
+            const confidence = calculateConfidence();
+            
+            // Actualizar elementos de análisis
+            trendElement.textContent = trend > 0 ? 'Alcista' : 'Bajista';
+            trendElement.style.color = trend > 0 ? 'var(--success)' : 'var(--danger)';
+            
+            volatilityElement.textContent = `${volatility.toFixed(2)}%`;
+            volatilityElement.style.color = volatility > 5 ? 'var(--danger)' : 'var(--success)';
+            
+            rsiElement.textContent = rsi.toFixed(2);
+            if (rsi > 70) {
+                rsiElement.style.color = 'var(--danger)'; // Sobrecomprado
+            } else if (rsi < 30) {
+                rsiElement.style.color = 'var(--success)'; // Sobreventa
+            } else {
+                rsiElement.style.color = 'var(--warning)'; // Neutral
+            }
+            
+            confidenceElement.textContent = `${confidence.toFixed(1)}%`;
+            
+            // Generar recomendación
+            generateRecommendation(trend, volatility, rsi, confidence);
+            
+            // Actualizar gráfico
+            updateChart();
+        }
+        
+        // Función para calcular tendencia
+        function calculateTrend() {
+            if (priceHistory.length < 5) return 0;
+            
+            const recentPrices = priceHistory.slice(-5).map(p => p.price);
+            const firstPrice = recentPrices[0];
+            const lastPrice = recentPrices[recentPrices.length - 1];
+            
+            return (lastPrice - firstPrice) / firstPrice * 100;
+        }
+        
+        // Función para calcular volatilidad
+        function calculateVolatility() {
+            if (priceHistory.length < 10) return 0;
+            
+            const prices = priceHistory.map(p => p.price);
+            const returns = [];
+            
+            for (let i = 1; i < prices.length; i++) {
+                returns.push((prices[i] - prices[i-1]) / prices[i-1]);
+            }
+            
+            const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+            const variance = returns.reduce((a, b) => a + Math.pow(b - avgReturn, 2), 0) / returns.length;
+            
+            return Math.sqrt(variance) * 100;
+        }
+        
+        // Función para calcular RSI (simulado)
+        function calculateRSI() {
+            // En una implementación real, calcularías el RSI basado en ganancias/pérdidas
+            return 30 + Math.random() * 50; // Simular RSI entre 30 y 80
+        }
+        
+        // Función para calcular confianza
+        function calculateConfidence() {
+            // Basado en la consistencia de la tendencia y la volatilidad
+            const trend = Math.abs(calculateTrend());
+            const volatility = calculateVolatility();
+            
+            // Menor volatilidad y tendencia más definida = mayor confianza
+            let confidence = 70 - volatility * 2 + trend * 2;
+            
+            // Asegurar que esté entre 0 y 100
+            return Math.max(0, Math.min(100, confidence));
+        }
+        
+        // Función para generar recomendación
+        function generateRecommendation(trend, volatility, rsi, confidence) {
+            let recommendation = '';
+            let signalClass = '';
+            let potentialProfit = 0;
+            
+            // Lógica de recomendación simplificada
+            if (trend > 1 && rsi < 70 && volatility < 8) {
+                recommendation = 'COMPRAR - Tendencia alcista con baja volatilidad';
+                signalClass = 'buy-signal';
+                potentialProfit = (trend * 0.8).toFixed(2); // Estimación simplificada
+            } else if (trend < -1 && rsi > 30) {
+                recommendation = 'VENDER - Tendencia bajista';
+                signalClass = 'sell-signal';
+                potentialProfit = (Math.abs(trend) * 0.6).toFixed(2);
+            } else {
+                recommendation = 'MANTENER - Mercado lateral o condiciones inciertas';
+                signalClass = 'hold-signal';
+                potentialProfit = 0;
+            }
+            
+            // Actualizar elementos
+            predictionResultElement.textContent = recommendation;
+            predictionResultElement.className = `prediction-result ${signalClass}`;
+            
+            potentialProfitElement.textContent = `${potentialProfit}%`;
+            potentialProfitElement.style.color = potentialProfit > 0 ? 'var(--success)' : 'var(--danger)';
+        }
+        
+        // Función para inicializar el gráfico
+        function initializeChart() {
+            const ctx = document.getElementById('price-chart').getContext('2d');
+            
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Precio BNB (USD)',
+                        data: [],
+                        borderColor: '#f0b90b',
+                        backgroundColor: 'rgba(240, 185, 11, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Función para actualizar el gráfico
+        function updateChart() {
+            if (!priceChart) return;
+            
+            const labels = priceHistory.map((_, index) => {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - (priceHistory.length - index - 1));
+                return now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            });
+            
+            const data = priceHistory.map(p => p.price);
+            
+            priceChart.data.labels = labels;
+            priceChart.data.datasets[0].data = data;
+            priceChart.update();
+        }
+        
+        // Función para simular compra
+        function simulateBuy() {
+            if (usdBalance > 0) {
+                const bnbToBuy = usdBalance / currentPrice;
+                bnbBalance += bnbToBuy;
+                usdBalance = 0;
+                
+                alert(`Compra simulada: ${bnbToBuy.toFixed(4)} BNB por $${(bnbToBuy * currentPrice).toFixed(2)}`);
+                updateUI();
+            } else {
+                alert('No tienes suficiente saldo en USD para comprar');
+            }
+        }
+        
+        // Función para simular venta
+        function simulateSell() {
+            if (bnbBalance > 0) {
+                const usdToReceive = bnbBalance * currentPrice;
+                usdBalance += usdToReceive;
+                const profit = usdBalance - 150; // Asumiendo que empezaste con $150
+                
+                alert(`Venta simulada: ${bnbBalance.toFixed(4)} BNB por $${usdToReceive.toFixed(2)}\nBeneficio/Pérdida: $${profit.toFixed(2)}`);
+                bnbBalance = 0;
+                updateUI();
+            } else {
+                alert('No tienes BNB para vender');
+            }
+        }
+    </script>
+</body>
+</html>
