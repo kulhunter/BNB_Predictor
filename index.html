@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alertas BNB - Precios Reales</title>
+    <title>Señales BNB - Compra/Venta con Precios Reales</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -101,49 +101,55 @@
             font-size: 1.1rem;
         }
         
-        .alert-box {
-            padding: 20px;
-            border-radius: 8px;
-            margin: 15px 0;
+        .signal-box {
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
             text-align: center;
             font-weight: bold;
-            border: 2px solid;
+            border: 3px solid;
+            animation: pulse 2s infinite;
         }
         
-        .buy-alert {
+        .buy-signal {
             background-color: rgba(14, 203, 129, 0.2);
             border-color: var(--success);
             color: var(--success);
-            animation: pulse 2s infinite;
         }
         
-        .sell-alert {
+        .sell-signal {
             background-color: rgba(246, 70, 93, 0.2);
             border-color: var(--danger);
             color: var(--danger);
-            animation: pulse 2s infinite;
         }
         
-        .hold-alert {
+        .hold-signal {
             background-color: rgba(240, 185, 11, 0.2);
             border-color: var(--warning);
             color: var(--warning);
         }
         
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
         
-        .alert-message {
-            font-size: 1.3rem;
+        .signal-message {
+            font-size: 1.4rem;
             margin-bottom: 10px;
         }
         
-        .alert-reason {
-            font-size: 1rem;
+        .signal-details {
+            font-size: 1.1rem;
             opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .signal-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 10px 0;
         }
         
         .controls {
@@ -188,20 +194,63 @@
             transform: translateY(-2px);
         }
         
+        .target-info {
+            background-color: rgba(240, 185, 11, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .target-info h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        
+        .profit-display {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .profit-positive {
+            color: var(--success);
+        }
+        
+        .profit-negative {
+            color: var(--danger);
+        }
+        
+        .progress-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 20px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
         .alerts-container {
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
             margin-top: 15px;
         }
         
         .alert-item {
-            padding: 12px;
+            padding: 15px;
             margin-bottom: 10px;
-            border-radius: 5px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            border-left: 4px solid;
+            gap: 12px;
+            border-left: 5px solid;
         }
         
         .alert-buy {
@@ -225,43 +274,22 @@
             margin-top: 5px;
         }
         
-        .profit-info {
-            background-color: rgba(240, 185, 11, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            text-align: center;
-        }
-        
-        .profit-info h3 {
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-        
-        .profit-amount {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .profit-positive {
-            color: var(--success);
-        }
-        
-        .profit-negative {
-            color: var(--danger);
-        }
-        
         .status-indicator {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             margin-right: 8px;
         }
         
         .status-online {
             background-color: var(--success);
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
         }
         
         .status-offline {
@@ -291,18 +319,23 @@
             opacity: 0.7;
             font-style: italic;
         }
+        
+        .price-change {
+            font-size: 1.1rem;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-bell"></i> Alertas BNB - Precios Reales</h1>
-            <p class="subtitle">Sistema simple para ganar $30+ con $150</p>
-            <p><span class="status-indicator" id="status-indicator"></span> <span id="connection-status">Conectando...</span></p>
+            <h1><i class="fas fa-bullhorn"></i> Señales BNB - COMPRA/VENTA</h1>
+            <p class="subtitle">Alertas claras con precios reales - Objetivo: $30 de ganancia con $150</p>
+            <p><span class="status-indicator" id="status-indicator"></span> <span id="connection-status">Conectando a datos reales...</span></p>
         </header>
         
         <div class="card">
-            <h2><i class="fas fa-chart-line"></i> Precio Real BNB</h2>
+            <h2><i class="fas fa-chart-line"></i> Precio Real BNB/USDT</h2>
             <div class="price-display" id="current-price">Cargando precio real...</div>
             <div class="stats">
                 <div class="stat-item">
@@ -321,36 +354,40 @@
         </div>
         
         <div class="card">
-            <h2><i class="fas fa-exclamation-circle"></i> Alerta de Trading</h2>
-            <div class="alert-box" id="alert-box">
-                <div class="alert-message">Conectando con datos reales...</div>
-                <div class="alert-reason" id="alert-reason">Obteniendo información del mercado</div>
+            <h2><i class="fas fa-bell"></i> SEÑAL ACTUAL</h2>
+            <div class="signal-box" id="signal-box">
+                <div class="signal-message">ANALIZANDO MERCADO...</div>
+                <div class="signal-details" id="signal-details">Buscando mejores oportunidades de trading</div>
+                <div class="signal-price" id="signal-price">Precio actual: $---</div>
             </div>
             
-            <div class="profit-info">
-                <h3>Objetivo: $30 de Ganancia</h3>
-                <div>Ganancia actual: <span class="profit-amount" id="current-profit">$0.00</span></div>
-                <div id="profit-status">Esperando datos del mercado...</div>
+            <div class="target-info">
+                <h3><i class="fas fa-bullseye"></i> OBJETIVO: $30 DE GANANCIA</h3>
+                <div class="profit-display" id="current-profit">$0.00</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <div id="profit-status">Esperando operación...</div>
             </div>
             
             <div class="controls">
                 <button class="btn-buy" id="buy-btn" disabled>
-                    <i class="fas fa-shopping-cart"></i> Comprar BNB
+                    <i class="fas fa-shopping-cart"></i> EJECUTAR COMPRA
                 </button>
                 <button class="btn-sell" id="sell-btn" disabled>
-                    <i class="fas fa-dollar-sign"></i> Vender BNB
+                    <i class="fas fa-dollar-sign"></i> EJECUTAR VENTA
                 </button>
             </div>
         </div>
         
         <div class="card">
-            <h2><i class="fas fa-history"></i> Historial de Alertas</h2>
+            <h2><i class="fas fa-history"></i> HISTORIAL DE SEÑALES</h2>
             <div class="alerts-container" id="alerts-container">
                 <div class="alert-item alert-hold">
                     <i class="fas fa-info-circle"></i>
                     <div>
-                        <strong>INICIALIZANDO</strong>
-                        <div>Sistema cargando datos reales de BNB</div>
+                        <strong>INICIALIZANDO SISTEMA</strong>
+                        <div>Cargando datos reales de Binance Coin</div>
                         <div class="alert-time" id="last-update">-</div>
                     </div>
                 </div>
@@ -358,34 +395,35 @@
         </div>
         
         <div class="disclaimer">
-            <strong>ATENCIÓN:</strong> Esta es una herramienta educativa. Las criptomonedas son volátiles y puedes perder dinero. 
-            Nunca inviertas más de lo que estés dispuesto a perder. Precios obtenidos de CoinGecko API.
+            <strong>⚠️ ATENCIÓN:</strong> Esta es una herramienta educativa. Las criptomonedas son volátiles. 
+            Nunca inviertas más de lo que estés dispuesto a perder. Precios de Binance via API pública.
         </div>
         
         <footer>
-            <p>Datos en tiempo real de CoinGecko | No es asesoramiento financiero</p>
+            <p>Datos en tiempo real de Binance | Señales basadas en análisis técnico simple</p>
         </footer>
     </div>
 
     <script>
-        // Variables del trading
+        // Variables de trading
         let currentPrice = 0;
         let bnbBalance = 0;
         let usdBalance = 150;
         let initialInvestment = 150;
         let lastBuyPrice = 0;
-        let tradeHistory = [];
         let priceHistory = [];
-        let lastAlert = null;
+        let lastSignal = null;
         
-        // Elementos del DOM
+        // Elementos DOM
         const currentPriceElement = document.getElementById('current-price');
         const change24hElement = document.getElementById('change-24h');
         const high24hElement = document.getElementById('high-24h');
         const low24hElement = document.getElementById('low-24h');
-        const alertBox = document.getElementById('alert-box');
-        const alertReason = document.getElementById('alert-reason');
+        const signalBox = document.getElementById('signal-box');
+        const signalDetails = document.getElementById('signal-details');
+        const signalPrice = document.getElementById('signal-price');
         const currentProfitElement = document.getElementById('current-profit');
+        const progressBar = document.getElementById('progress-bar');
         const profitStatusElement = document.getElementById('profit-status');
         const buyButton = document.getElementById('buy-btn');
         const sellButton = document.getElementById('sell-btn');
@@ -393,264 +431,255 @@
         const statusIndicator = document.getElementById('status-indicator');
         const connectionStatus = document.getElementById('connection-status');
         const lastUpdateElement = document.getElementById('last-update');
-        
-        // Inicializar la aplicación
+
+        // Inicializar app
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
-            setInterval(fetchRealPrice, 10000); // Actualizar cada 10 segundos
+            setInterval(fetchRealPrice, 8000);
         });
-        
-        // Función para inicializar
+
         async function initializeApp() {
-            updateStatus('Conectando a API...', 'offline');
+            updateStatus('Conectando a Binance...', 'offline');
             await fetchRealPrice();
-            updateStatus('Conectado - Datos reales', 'online');
+            updateStatus('CONECTADO - Datos reales', 'online');
             
-            // Habilitar botones
             buyButton.disabled = false;
             sellButton.disabled = false;
             
-            // Configurar eventos de botones
             buyButton.addEventListener('click', executeBuy);
             sellButton.addEventListener('click', executeSell);
             
-            // Generar primera alerta
-            generateAlert();
+            generateSignal();
         }
-        
-        // Función para obtener precio real
+
         async function fetchRealPrice() {
             try {
-                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_last_updated_at=true&include_24hr_high=true&include_24hr_low=true');
+                // Usar API de Binance para precio real
+                const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BNBUSDT');
                 const data = await response.json();
                 
-                if (data && data.binancecoin) {
-                    const bnbData = data.binancecoin;
+                if (data && data.lastPrice) {
+                    currentPrice = parseFloat(data.lastPrice);
+                    const priceChange = parseFloat(data.priceChangePercent);
+                    const highPrice = parseFloat(data.highPrice);
+                    const lowPrice = parseFloat(data.lowPrice);
                     
-                    // Actualizar precio actual
-                    currentPrice = bnbData.usd;
+                    updateUI({
+                        price: currentPrice,
+                        change: priceChange,
+                        high: highPrice,
+                        low: lowPrice
+                    });
                     
-                    // Actualizar interfaz
-                    updateUI(bnbData);
-                    generateAlert();
-                    
-                    updateStatus('Datos actualizados', 'online');
+                    generateSignal();
+                    updateStatus('SEÑALES ACTIVAS', 'online');
                     lastUpdateElement.textContent = new Date().toLocaleTimeString();
                 }
             } catch (error) {
-                console.error('Error obteniendo precio real:', error);
-                updateStatus('Error conectando a API', 'offline');
-                
-                // Usar datos simulados como fallback
+                console.error('Error:', error);
+                updateStatus('Error - Usando datos de respaldo', 'offline');
                 useFallbackData();
             }
         }
-        
-        // Función para usar datos de respaldo
+
         function useFallbackData() {
-            // Simular un cambio pequeño basado en el precio anterior
-            const changePercent = (Math.random() - 0.5) * 2; // -1% a +1%
-            currentPrice = currentPrice > 0 ? currentPrice * (1 + changePercent / 100) : 580;
+            // Datos realistas basados en precio actual de BNB (~$580)
+            const changePercent = (Math.random() - 0.5) * 4;
+            currentPrice = currentPrice > 0 ? currentPrice * (1 + changePercent / 100) : 580 + (Math.random() - 0.5) * 20;
             
             const fakeData = {
-                usd: currentPrice,
-                usd_24h_change: (Math.random() - 0.5) * 10, // -5% a +5%
-                usd_24h_high: currentPrice * (1 + Math.random() * 0.05), // 0-5% arriba
-                usd_24h_low: currentPrice * (1 - Math.random() * 0.05)   // 0-5% abajo
+                price: currentPrice,
+                change: (Math.random() - 0.5) * 8,
+                high: currentPrice * (1 + Math.random() * 0.04),
+                low: currentPrice * (1 - Math.random() * 0.04)
             };
             
             updateUI(fakeData);
-            generateAlert();
-            updateStatus('Usando datos simulados', 'offline');
+            generateSignal();
             lastUpdateElement.textContent = new Date().toLocaleTimeString() + ' (simulado)';
         }
-        
-        // Función para actualizar la interfaz
-        function updateUI(bnbData) {
-            // Actualizar precio
-            currentPriceElement.textContent = `$${bnbData.usd.toFixed(2)}`;
+
+        function updateUI(data) {
+            // Precio actual
+            currentPriceElement.textContent = `$${data.price.toFixed(2)}`;
             currentPriceElement.className = 'price-display';
             
-            // Actualizar cambio 24h
-            if (bnbData.usd_24h_change !== undefined) {
-                const change24h = bnbData.usd_24h_change;
-                change24hElement.textContent = `${change24h.toFixed(2)}%`;
-                change24hElement.className = change24h >= 0 ? 'stat-value price-up' : 'stat-value price-down';
-            }
+            // Cambio 24h
+            change24hElement.textContent = `${data.change.toFixed(2)}%`;
+            change24hElement.className = data.change >= 0 ? 'stat-value price-up' : 'stat-value price-down';
             
-            // Actualizar máximo y mínimo 24h
-            if (bnbData.usd_24h_high) {
-                high24hElement.textContent = `$${bnbData.usd_24h_high.toFixed(2)}`;
-            }
+            // High/Low
+            high24hElement.textContent = `$${data.high.toFixed(2)}`;
+            low24hElement.textContent = `$${data.low.toFixed(2)}`;
             
-            if (bnbData.usd_24h_low) {
-                low24hElement.textContent = `$${bnbData.usd_24h_low.toFixed(2)}`;
-            }
+            // Actualizar ganancias
+            updateProfitDisplay();
+        }
+
+        function generateSignal() {
+            const signal = calculateSignal();
             
-            // Calcular ganancia actual si tenemos BNB
+            // Evitar señales duplicadas
+            if (lastSignal === signal.type) return;
+            lastSignal = signal.type;
+            
+            // Aplicar estilos según señal
+            signalBox.className = `signal-box ${signal.type}-signal`;
+            signalBox.innerHTML = `
+                <div class="signal-message">${signal.message}</div>
+                <div class="signal-details">${signal.details}</div>
+                <div class="signal-price">${signal.priceInfo}</div>
+            `;
+            
+            addAlertToHistory(signal);
+        }
+
+        function calculateSignal() {
+            if (bnbBalance === 0) {
+                // ESTRATEGIA DE COMPRA
+                const change24h = parseFloat(change24hElement.textContent) || 0;
+                
+                // Señal FUERTE de COMPRA si:
+                // 1. Precio bajó más del 3% en 24h
+                // 2. Está cerca del mínimo de 24h
+                const currentLow = parseFloat(low24hElement.textContent.replace('$', '')) || 0;
+                const distanceToLow = ((currentPrice - currentLow) / currentLow) * 100;
+                
+                if (change24h < -3 && distanceToLow < 2) {
+                    return {
+                        type: 'buy',
+                        message: '🚨 COMPRA INMEDIATA 🚨',
+                        details: 'Precio en zona de soporte fuerte - Bajada del ' + Math.abs(change24h).toFixed(1) + '% en 24h',
+                        priceInfo: `Precio actual: $${currentPrice.toFixed(2)} | Objetivo: $${(currentPrice * 1.06).toFixed(2)} (+6%)`
+                    };
+                }
+                
+                // Señal de COMPRA si precio bajó
+                if (change24h < -1.5) {
+                    return {
+                        type: 'buy',
+                        message: '✅ SEÑAL DE COMPRA',
+                        details: 'Precio en corrección - Oportunidad de entrada',
+                        priceInfo: `Precio actual: $${currentPrice.toFixed(2)} | Objetivo: $${(currentPrice * 1.05).toFixed(2)} (+5%)`
+                    };
+                }
+                
+                // Mantener si no hay señales claras
+                return {
+                    type: 'hold',
+                    message: '⏳ MANTENER EFECTIVO',
+                    details: 'Esperando mejor oportunidad de compra',
+                    priceInfo: `Precio actual: $${currentPrice.toFixed(2)} | Esperar bajo $${(currentPrice * 0.98).toFixed(2)}`
+                };
+                
+            } else {
+                // ESTRATEGIA DE VENTA
+                const profit = (bnbBalance * currentPrice) - initialInvestment;
+                const profitPercentage = (profit / initialInvestment) * 100;
+                const buyPrice = lastBuyPrice;
+                const priceChangeSinceBuy = ((currentPrice - buyPrice) / buyPrice) * 100;
+                
+                // 🎯 OBJETIVO CUMPLIDO - VENDER
+                if (profit >= 30) {
+                    return {
+                        type: 'sell',
+                        message: '🎯 VENDER AHORA - OBJETIVO CUMPLIDO',
+                        details: `¡GANANCIA DE $${profit.toFixed(2)} ALCANZADA!`,
+                        priceInfo: `Compra: $${buyPrice.toFixed(2)} | Actual: $${currentPrice.toFixed(2)} | Ganancia: ${profitPercentage.toFixed(1)}%`
+                    };
+                }
+                
+                // 📈 BUENA GANANCIA - CONSIDERAR VENTA
+                if (profit >= 20) {
+                    return {
+                        type: 'sell',
+                        message: '💡 CONSIDERAR VENTA',
+                        details: `Ganancia actual: $${profit.toFixed(2)} - Cerca del objetivo de $30`,
+                        priceInfo: `Faltan $${(30 - profit).toFixed(2)} para el objetivo | Ganancia: ${profitPercentage.toFixed(1)}%`
+                    };
+                }
+                
+                // 🔻 CORTAR PÉRDIDAS si bajada fuerte
+                if (profit <= -20) {
+                    return {
+                        type: 'sell',
+                        message: '⚠️ CORTAR PÉRDIDAS',
+                        details: `Pérdida significativa: $${Math.abs(profit).toFixed(2)}`,
+                        priceInfo: `Compra: $${buyPrice.toFixed(2)} | Actual: $${currentPrice.toFixed(2)} | Pérdida: ${Math.abs(profitPercentage).toFixed(1)}%`
+                    };
+                }
+                
+                // 📊 MANTENER POSICIÓN
+                return {
+                    type: 'hold',
+                    message: '📈 MANTENER BNB',
+                    details: profit >= 0 ? 
+                        `En ganancias: $${profit.toFixed(2)} | Objetivo: $30` :
+                        `En recuperación: $${Math.abs(profit).toFixed(2)} de pérdida`,
+                    priceInfo: `Compra: $${buyPrice.toFixed(2)} | Actual: $${currentPrice.toFixed(2)} | Cambio: ${priceChangeSinceBuy.toFixed(1)}%`
+                };
+            }
+        }
+
+        function updateProfitDisplay() {
             if (bnbBalance > 0 && lastBuyPrice > 0) {
                 const currentValue = bnbBalance * currentPrice;
                 const profit = currentValue - initialInvestment;
+                const progress = Math.min(100, (profit / 30) * 100);
                 
                 currentProfitElement.textContent = `$${profit.toFixed(2)}`;
-                currentProfitElement.className = profit >= 0 ? 'profit-amount profit-positive' : 'profit-amount profit-negative';
+                currentProfitElement.className = profit >= 0 ? 'profit-display profit-positive' : 'profit-display profit-negative';
+                
+                progressBar.style.width = `${progress}%`;
                 
                 if (profit >= 30) {
-                    profitStatusElement.textContent = "¡OBJETIVO ALCANZADO! Considera vender para asegurar ganancias.";
-                    profitStatusElement.style.color = "var(--success)";
-                    profitStatusElement.style.fontWeight = "bold";
-                } else if (profit >= 15) {
-                    profitStatusElement.textContent = "Buen progreso. Continúa monitoreando para alcanzar los $30.";
-                    profitStatusElement.style.color = "var(--success)";
+                    profitStatusElement.textContent = '🎯 ¡OBJETIVO ALCANZADO! VENDER PARA ASEGURAR GANANCIAS';
+                    profitStatusElement.style.color = 'var(--success)';
+                } else if (profit >= 20) {
+                    profitStatusElement.textContent = '✅ Buen progreso - Cerca del objetivo de $30';
+                    profitStatusElement.style.color = 'var(--success)';
                 } else if (profit >= 0) {
-                    profitStatusElement.textContent = "En ganancias. Espera a que aumenten para alcanzar tu objetivo.";
-                    profitStatusElement.style.color = "var(--success)";
+                    profitStatusElement.textContent = `📈 En ganancias - Faltan $${(30 - profit).toFixed(2)} para el objetivo`;
+                    profitStatusElement.style.color = 'var(--success)';
                 } else {
-                    profitStatusElement.textContent = "En pérdidas. Espera una señal de compra para recuperarte.";
-                    profitStatusElement.style.color = "var(--danger)";
+                    profitStatusElement.textContent = `⏳ En recuperación - $${Math.abs(profit).toFixed(2)} de pérdida`;
+                    profitStatusElement.style.color = 'var(--danger)';
                 }
             } else {
-                currentProfitElement.textContent = "$0.00";
-                currentProfitElement.className = "profit-amount";
-                profitStatusElement.textContent = "Opera siguiendo las alertas para alcanzar tu objetivo";
-                profitStatusElement.style.color = "var(--text)";
+                currentProfitElement.textContent = '$0.00';
+                currentProfitElement.className = 'profit-display';
+                progressBar.style.width = '0%';
+                profitStatusElement.textContent = 'Esperando operación de compra';
+                profitStatusElement.style.color = 'var(--text)';
             }
         }
-        
-        // Función para actualizar estado de conexión
-        function updateStatus(message, status) {
-            connectionStatus.textContent = message;
-            statusIndicator.className = `status-indicator ${status === 'online' ? 'status-online' : 'status-offline'}`;
-        }
-        
-        // Función para generar alertas basadas en precio real
-        function generateAlert() {
-            if (currentPrice === 0) return;
-            
-            const marketSituation = analyzeRealMarket();
-            
-            // Evitar alertas duplicadas
-            if (lastAlert === marketSituation.signal) return;
-            lastAlert = marketSituation.signal;
-            
-            // Generar alerta basada en la situación del mercado
-            if (marketSituation.signal === "BUY") {
-                alertBox.className = "alert-box buy-alert";
-                alertBox.innerHTML = `
-                    <div class="alert-message"><i class="fas fa-arrow-up"></i> SEÑAL DE COMPRA</div>
-                    <div class="alert-reason">${marketSituation.reason}</div>
-                `;
-            } else if (marketSituation.signal === "SELL") {
-                alertBox.className = "alert-box sell-alert";
-                alertBox.innerHTML = `
-                    <div class="alert-message"><i class="fas fa-arrow-down"></i> SEÑAL DE VENTA</div>
-                    <div class="alert-reason">${marketSituation.reason}</div>
-                `;
-            } else {
-                alertBox.className = "alert-box hold-alert";
-                alertBox.innerHTML = `
-                    <div class="alert-message"><i class="fas fa-pause"></i> MANTENER POSICIÓN</div>
-                    <div class="alert-reason">${marketSituation.reason}</div>
-                `;
-            }
-            
-            // Registrar alerta en el historial
-            addAlertToHistory(marketSituation.signal, marketSituation.reason);
-        }
-        
-        // Función para analizar el mercado con datos reales
-        function analyzeRealMarket() {
-            // Análisis simple basado en precio actual y tendencia
-            if (bnbBalance === 0) {
-                // Estrategia de compra - buscar buenos puntos de entrada
-                
-                // Si el precio bajó significativamente en 24h, puede ser buena compra
-                const change24h = parseFloat(change24hElement.textContent) || 0;
-                
-                if (change24h < -5) {
-                    return {
-                        signal: "BUY",
-                        reason: "BNB ha bajado " + Math.abs(change24h).toFixed(1) + "% en 24h. Posible rebote."
-                    };
-                }
-                
-                // Si está cerca del mínimo de 24h, puede ser buen momento
-                const currentLow = parseFloat(low24hElement.textContent.replace('$', '')) || 0;
-                if (currentLow > 0 && currentPrice <= currentLow * 1.01) { // Dentro del 1% del mínimo
-                    return {
-                        signal: "BUY",
-                        reason: "Precio cerca del mínimo de 24h. Posible soporte."
-                    };
-                }
-                
-                // Si no hay señales claras, mantener
-                return {
-                    signal: "HOLD",
-                    reason: "Esperando mejor oportunidad de compra. Precio actual: $" + currentPrice.toFixed(2)
-                };
-                
-            } else {
-                // Estrategia de venta - buscar tomar ganancias
-                const profit = (bnbBalance * currentPrice) - initialInvestment;
-                const profitPercentage = (profit / initialInvestment) * 100;
-                
-                // Si alcanzamos el objetivo de $30
-                if (profit >= 30) {
-                    return {
-                        signal: "SELL",
-                        reason: "¡OBJETIVO CUMPLIDO! Ganancia: $" + profit.toFixed(2) + " (" + profitPercentage.toFixed(1) + "%)"
-                    };
-                }
-                
-                // Si tenemos buena ganancia pero no llegamos a $30
-                if (profit >= 15) {
-                    return {
-                        signal: "HOLD",
-                        reason: "Ganancia actual: $" + profit.toFixed(2) + ". Esperando llegar a $30."
-                    };
-                }
-                
-                // Si estamos en pérdidas significativas
-                if (profit <= -15) {
-                    return {
-                        signal: "SELL",
-                        reason: "Pérdida significativa: $" + Math.abs(profit).toFixed(2) + ". Considera cortar pérdidas."
-                    };
-                }
-                
-                // Por defecto, mantener
-                return {
-                    signal: "HOLD",
-                    reason: profit >= 0 ? 
-                        "En ganancias: $" + profit.toFixed(2) + ". Objetivo: $30" :
-                        "En espera: $" + profit.toFixed(2) + " de pérdida"
-                };
-            }
-        }
-        
-        // Función para agregar alerta al historial
-        function addAlertToHistory(signal, reason) {
+
+        function addAlertToHistory(signal) {
             const alertItem = document.createElement('div');
-            alertItem.className = `alert-item ${signal === 'BUY' ? 'alert-buy' : signal === 'SELL' ? 'alert-sell' : 'alert-hold'}`;
+            alertItem.className = `alert-item alert-${signal.type}`;
             
             alertItem.innerHTML = `
-                <i class="fas ${signal === 'BUY' ? 'fa-arrow-up' : signal === 'SELL' ? 'fa-arrow-down' : 'fa-pause'}"></i>
+                <i class="fas ${signal.type === 'buy' ? 'fa-arrow-up' : signal.type === 'sell' ? 'fa-arrow-down' : 'fa-pause'}"></i>
                 <div>
-                    <strong>${signal === 'BUY' ? 'COMPRA' : signal === 'SELL' ? 'VENTA' : 'MANTENER'}</strong>
-                    <div>${reason}</div>
+                    <strong>${signal.type === 'buy' ? 'COMPRA' : signal.type === 'sell' ? 'VENTA' : 'MANTENER'}</strong>
+                    <div>${signal.details}</div>
+                    <div>${signal.priceInfo}</div>
                     <div class="alert-time">${new Date().toLocaleTimeString()}</div>
                 </div>
             `;
             
             alertsContainer.prepend(alertItem);
             
-            // Limitar a 8 alertas en el historial
-            if (alertsContainer.children.length > 8) {
+            if (alertsContainer.children.length > 6) {
                 alertsContainer.removeChild(alertsContainer.lastChild);
             }
         }
-        
-        // Función para ejecutar compra
+
+        function updateStatus(message, status) {
+            connectionStatus.textContent = message;
+            statusIndicator.className = `status-indicator status-${status}`;
+        }
+
         function executeBuy() {
             if (usdBalance > 0) {
                 const bnbToBuy = usdBalance / currentPrice;
@@ -658,57 +687,37 @@
                 lastBuyPrice = currentPrice;
                 usdBalance = 0;
                 
-                // Registrar en historial
-                tradeHistory.push({
-                    type: 'BUY',
-                    price: currentPrice,
-                    amount: bnbToBuy,
-                    timestamp: new Date()
-                });
+                alert(`✅ COMPRA EJECUTADA\n${bnbToBuy.toFixed(6)} BNB a $${currentPrice.toFixed(2)}\nInversión: $150`);
                 
-                // Mostrar confirmación
-                alert(`Compra ejecutada: ${bnbToBuy.toFixed(6)} BNB a $${currentPrice.toFixed(2)}`);
-                
-                // Actualizar interfaz
-                updateUI({usd: currentPrice});
-                generateAlert();
+                updateProfitDisplay();
+                generateSignal();
             } else {
-                alert('No tienes saldo suficiente para comprar');
+                alert('No tienes saldo disponible');
             }
         }
-        
-        // Función para ejecutar venta
+
         function executeSell() {
             if (bnbBalance > 0) {
                 const usdReceived = bnbBalance * currentPrice;
                 const profit = usdReceived - initialInvestment;
                 
-                usdBalance = usdReceived;
-                
-                // Registrar en historial
-                tradeHistory.push({
-                    type: 'SELL',
-                    price: currentPrice,
-                    amount: bnbBalance,
-                    timestamp: new Date()
-                });
-                
-                // Mostrar resultado
+                let message;
                 if (profit >= 0) {
-                    alert(`Venta ejecutada: ${bnbBalance.toFixed(6)} BNB a $${currentPrice.toFixed(2)}\nGanancia: $${profit.toFixed(2)}`);
+                    message = `✅ VENTA EJECUTADA\n${bnbBalance.toFixed(6)} BNB a $${currentPrice.toFixed(2)}\nGANANCIA: $${profit.toFixed(2)}`;
                 } else {
-                    alert(`Venta ejecutada: ${bnbBalance.toFixed(6)} BNB a $${currentPrice.toFixed(2)}\nPérdida: $${Math.abs(profit).toFixed(2)}`);
+                    message = `🔻 VENTA EJECUTADA\n${bnbBalance.toFixed(6)} BNB a $${currentPrice.toFixed(2)}\nPÉRDIDA: $${Math.abs(profit).toFixed(2)}`;
                 }
                 
-                // Resetear balances
+                alert(message);
+                
+                // Resetear para nueva operación
                 bnbBalance = 0;
                 lastBuyPrice = 0;
-                initialInvestment = 150; // Reset para próxima operación
+                initialInvestment = 150;
                 usdBalance = usdReceived;
                 
-                // Actualizar interfaz
-                updateUI({usd: currentPrice});
-                generateAlert();
+                updateProfitDisplay();
+                generateSignal();
             } else {
                 alert('No tienes BNB para vender');
             }
